@@ -2,7 +2,10 @@
 node_modules/
 
 # 环境变量文件
-.env*
+.env
+.env.development
+.env.production
+.env.*
 
 # 日志文件
 *.log
