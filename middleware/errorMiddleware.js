@@ -18,21 +18,30 @@ const errorHandler = (err, req, res, next) => {
     errorMessage = err.message || '禁止访问';
   } else if (err.name === 'NotFoundError') {
     statusCode = 404;
-    errorMessage = err.message || '资源未找到';
+    errorMessage = err.message || '请求的资源不存在';
   } else if (err.code === 'ER_DUP_ENTRY') {
     statusCode = 400;
     errorMessage = '数据已存在';
   } else if (err.message) {
-    // 使用自定义错误消息
     errorMessage = err.message;
   }
 
-  // 返回错误响应
+  // 根据环境返回不同级别的错误信息
+  if (process.env.NODE_ENV === 'development') {
+    // 开发环境返回详细错误信息
+    return res.status(statusCode).json({
+      code: statusCode,
+      message: errorMessage,
+      data: null,
+      stack: err.stack
+    });
+  }
+
+  // 生产环境只返回基本错误信息
   res.status(statusCode).json({
     code: statusCode,
     message: errorMessage,
-    data: null,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    data: null
   });
 };
 
@@ -77,4 +86,4 @@ module.exports = {
   UnauthorizedError,
   ForbiddenError,
   NotFoundError
-};
+}

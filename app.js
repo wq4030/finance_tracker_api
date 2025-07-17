@@ -4,7 +4,16 @@ const userRoutes = require('./routes/userRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
-require('dotenv').config();
+// 确定当前环境
+const env = process.env.NODE_ENV || 'development';
+
+// 加载对应环境的配置文件
+require('dotenv').config({ path: `.env.${env}` });
+
+// 如果存在基础配置文件，也可以先加载基础配置
+// require('dotenv').config();
+// 然后加载环境特定配置并覆盖
+// require('dotenv').config({ path: `.env.${env}`, override: true });
 const app = express();
 const PORT = process.env.PORT || 3000;
 
