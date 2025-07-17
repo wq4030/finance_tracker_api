@@ -35,6 +35,10 @@ yarn.lock
 .DS_Store
 Thumbs.db
 
+# 测试文件
+test*
+test*/**
+
 # 其他
 *.md.bak
 *.tmp
@@ -42,3 +46,4 @@ Thumbs.db
 # 不要忽略README.md和.gitignore
 !README.md
 !.gitignore
+!test.http
