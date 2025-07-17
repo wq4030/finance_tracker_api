@@ -29,9 +29,9 @@ const errorHandler = (err, req, res, next) => {
 
   // 返回错误响应
   res.status(statusCode).json({
-    success: false,
-    error: errorMessage,
-    // 开发环境下返回错误堆栈
+    code: statusCode,
+    message: errorMessage,
+    data: null,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 };

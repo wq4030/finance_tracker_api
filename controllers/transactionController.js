@@ -22,7 +22,7 @@ class TransactionController {
         userId, amount, type, category, description, transactionDate
       );
 
-      res.status(201).json({ message: '交易记录创建成功', transaction: newTransaction });
+      res.status(201).json({ code: 201, message: '交易记录创建成功', data: { transaction: newTransaction } });
     } catch (error) {
       next(error);
     }
@@ -34,7 +34,7 @@ class TransactionController {
       const userId = req.user.userId;
 
       const transactions = await TransactionModel.getUserTransactions(userId);
-      res.json({ transactions });
+      res.json({ code: 200, message: '获取交易记录成功', data: { transactions } });
     } catch (error) {
       next(error);
     }
@@ -51,7 +51,7 @@ class TransactionController {
         throw new NotFoundError('未找到该交易记录');
       }
 
-      res.json({ transaction });
+      res.json({ code: 200, message: '获取交易记录成功', data: { transaction } });
     } catch (error) {
       next(error);
     }
@@ -79,7 +79,7 @@ class TransactionController {
       );
 
       if (updated) {
-        res.json({ message: '交易记录更新成功' });
+        res.json({ code: 200, message: '交易记录更新成功', data: null });
       } else {
         throw new NotFoundError('未找到该交易记录或无权修改');
       }
@@ -98,7 +98,7 @@ class TransactionController {
       const deleted = await TransactionModel.deleteTransaction(id, userId);
 
       if (deleted) {
-        res.json({ message: '交易记录删除成功' });
+        res.json({ code: 200, message: '交易记录删除成功', data: null });
       } else {
         throw new NotFoundError('未找到该交易记录或无权删除');
       }

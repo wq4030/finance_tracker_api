@@ -1,5 +1,7 @@
 const CategoryModel = require('../models/categoryModel');
 
+const { NotFoundError } = require('../middleware/errorMiddleware');
+
 // 创建新分类
 const createCategory = async (req, res) => {
   try {
@@ -7,9 +9,9 @@ const createCategory = async (req, res) => {
     const userId = req.user.userId;
 
     const category = await CategoryModel.createCategory(userId, name, type, icon);
-    res.status(201).json(category);
+    res.status(201).json({ code: 201, message: '分类创建成功', data: { category } });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
@@ -18,9 +20,9 @@ const getUserCategories = async (req, res) => {
   try {
     const userId = req.user.userId;
     const categories = await CategoryModel.getUserCategories(userId);
-    res.status(200).json(categories);
+    res.status(200).json({ code: 200, message: '获取分类成功', data: { categories } });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
@@ -30,9 +32,9 @@ const getUserCategoriesByType = async (req, res) => {
     const userId = req.user.userId;
     const { type } = req.params;
     const categories = await CategoryModel.getUserCategoriesByType(userId, type);
-    res.status(200).json(categories);
+    res.status(200).json({ code: 200, message: '获取分类成功', data: { categories } });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
@@ -44,12 +46,12 @@ const getCategoryById = async (req, res) => {
     const category = await CategoryModel.getCategoryById(userId, id);
 
     if (!category) {
-      return res.status(404).json({ message: '分类不存在' });
+      throw new NotFoundError('分类不存在');
     }
 
-    res.status(200).json(category);
+    res.status(200).json({ code: 200, message: '获取分类成功', data: { category } });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
@@ -63,12 +65,12 @@ const updateCategory = async (req, res) => {
     const updatedCategory = await CategoryModel.updateCategory(userId, id, name, type, icon);
 
     if (!updatedCategory) {
-      return res.status(404).json({ message: '分类不存在' });
+      throw new NotFoundError('分类不存在');
     }
 
-    res.status(200).json(updatedCategory);
+    res.status(200).json({ code: 200, message: '分类更新成功', data: { category: updatedCategory } });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
@@ -81,12 +83,12 @@ const deleteCategory = async (req, res) => {
     const result = await CategoryModel.deleteCategory(id, userId);
 
     if (!result) {
-      return res.status(404).json({ message: '分类不存在' });
+      throw new NotFoundError('分类不存在');
     }
 
-    res.status(200).json({ message: '分类删除成功' });
+    res.status(200).json({ code: 200, message: '分类删除成功', data: null });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 

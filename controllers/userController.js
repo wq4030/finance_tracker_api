@@ -30,7 +30,7 @@ class UserController {
 
       // 创建新用户
       const newUser = await UserModel.createUser(username, email, password);
-      res.status(201).json({ message: "用户注册成功", user: newUser });
+      res.status(201).json({ code: 201, message: "用户注册成功", data: { user: newUser } });
     } catch (error) {
       next(error);
     }
@@ -66,9 +66,12 @@ class UserController {
       );
 
       res.json({
+        code: 200,
         message: "登录成功",
-        token,
-        user: { user_id: user.id, username: user.username, email: user.email },
+        data: {
+          token,
+          user: { user_id: user.id, username: user.username, email: user.email }
+        }
       });
     } catch (error) {
       next(error);
