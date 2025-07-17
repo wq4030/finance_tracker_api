@@ -11,9 +11,9 @@ POST {{baseUrl}}/api/users/register
 Content-Type: application/json
 
 {
-  "username": "{{username}}",
-  "email": "{{email}}",
-  "password": "{{password}}"
+  "username": "wq4030",
+  "email": "wq4030@qq.com",
+  "password": "wq4030"
 }
 
 ### 用户登录
@@ -21,8 +21,8 @@ POST {{baseUrl}}/api/users/login
 Content-Type: application/json
 
 {
-  "username": "{{username}}",
-  "password": "{{password}}"
+  "username": "wq4030",
+  "password": "wq4030"
 }
 
 ### 创建交易记录
@@ -62,4 +62,42 @@ Authorization: Bearer {{token}}
 
 ### 删除交易记录
 DELETE {{baseUrl}}/api/transactions/1
+Authorization: Bearer {{token}}
+
+### 创建分类
+POST {{baseUrl}}/api/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "工资",
+  "type": "income",
+  "icon": "💰"
+}
+
+### 获取所有分类
+GET {{baseUrl}}/api/categories
+Authorization: Bearer {{token}}
+
+### 根据类型获取分类
+GET {{baseUrl}}/api/categories/type/income
+Authorization: Bearer {{token}}
+
+### 获取特定分类
+GET {{baseUrl}}/api/categories/1
+Authorization: Bearer {{token}}
+
+### 更新分类
+PUT {{baseUrl}}/api/categories/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "餐饮美食",
+  "type": "expense",
+  "icon": "🍽️"
+}
+
+### 删除分类
+DELETE {{baseUrl}}/api/categories/3
 Authorization: Bearer {{token}}

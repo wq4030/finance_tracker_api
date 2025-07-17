@@ -41,7 +41,23 @@ async function setupDatabase() {
     );
     console.log('Transaction types inserted or already exist');
 
-    // 3. 创建transactions表
+    // 3. 创建categories表
+    await connection.execute(`
+      CREATE TABLE if not exists categories (
+        id int NOT NULL AUTO_INCREMENT,
+        user_id int NOT NULL,
+        name varchar(50) NOT NULL,
+        type enum('income','expense') NOT NULL,
+        icon varchar(100) DEFAULT NULL,
+        created_at datetime DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY user_id (user_id),
+        CONSTRAINT categories_ibfk_1 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    `);
+    console.log('Categories table created or already exists');
+
+    // 4. 创建transactions表
     await connection.execute(`
       create table if not exists transactions (
         id int auto_increment primary key,
