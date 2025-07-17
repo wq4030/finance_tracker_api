@@ -1,0 +1,44 @@
+# 依赖目录
+node_modules/
+
+# 环境变量文件
+.env
+
+# 日志文件
+*.log
+
+# 临时文件
+.tmp
+*.tmp
+
+# 编辑器/IDE文件
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 构建输出
+/dist/
+/build/
+
+# 依赖锁文件
+package-lock.json
+yarn.lock
+
+# 测试输出
+/coverage/
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 其他
+*.md.bak
+*.tmp
+
+# 不要忽略README.md和.gitignore
+!README.md
+!.gitignore

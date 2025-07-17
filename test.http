@@ -1,0 +1,65 @@
+### 环境变量
+@baseUrl = http://localhost:3000
+@username = testuser
+@email = test@example.com
+@password = password123
+@transactionId = 1
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJpYXQiOjE3NTI3NzIyMzQsImV4cCI6MTc1Mjg1ODYzNH0.XpYkfJtCdlmKPBrokdirJoJHP2O_64XgCNeYj6IBcs0
+
+### 用户注册
+POST {{baseUrl}}/api/users/register
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 用户登录
+POST {{baseUrl}}/api/users/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### 创建交易记录
+# 登录后将token替换到Authorization头
+POST {{baseUrl}}/api/transactions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "amount": 100.50,
+  "type": "income",
+  "category": "工资",
+  "description": "5月工资",
+  "transactionDate": "2023-05-15"
+}
+
+### 获取所有交易记录
+GET {{baseUrl}}/api/transactions
+Authorization: Bearer {{token}}
+
+### 获取特定交易记录
+GET {{baseUrl}}/api/transactions/2
+Authorization: Bearer {{token}}
+
+### 更新交易记录
+PUT {{baseUrl}}/api/transactions/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "amount": 120.75,
+  "type": "income",
+  "category": "工资",
+  "description": "5月工资调整",
+  "transactionDate": "2023-05-15"
+}
+
+### 删除交易记录
+DELETE {{baseUrl}}/api/transactions/1
+Authorization: Bearer {{token}}
