@@ -99,5 +99,5 @@ Authorization: Bearer {{token}}
 }
 
 ### 删除分类
-DELETE {{baseUrl}}/api/categories/3
+DELETE {{baseUrl}}/api/categories/1
 Authorization: Bearer {{token}}
