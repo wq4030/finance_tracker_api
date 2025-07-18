@@ -1,13 +1,13 @@
-const { AppError } = require('../middleware/errorMiddleware');
-const { executeQuery } = require('../utils/dbUtils');
+const { AppError } = require("../middleware/errorMiddleware");
+const { executeQuery } = require("../utils/dbUtils");
 
 class TransactionModel {
   /**
    * 创建新交易记录
    * @param {number} userId - 用户ID
    * @param {number} amount - 交易金额
-   * @param {string} type - 交易类型（收入或支出）
-   * @param {string} category - 交易分类
+   * @param {string} typeId - 交易类型ID
+   * @param {string} categoryId - 交易分类ID
    * @param {string} description - 交易描述
    * @param {string} transactionDate - 交易日期
    * @returns {Promise<Object>} 创建的交易记录对象
@@ -16,35 +16,27 @@ class TransactionModel {
   static async createTransaction(
     userId,
     amount,
-    type,
-    category,
+    typeId,
+    categoryId,
     description,
     transactionDate
   ) {
     try {
-      // 首先获取类型ID
-      const typeResult = await executeQuery(
-        "SELECT id FROM transaction_types WHERE name = ?",
-        [type]
-      );
-      if (typeResult.length === 0) {
-        throw new AppError("无效的交易类型", 400);
-      }
-      const typeId = typeResult[0].id;
-
       // 创建交易记录
       const result = await executeQuery(
-        "INSERT INTO transactions (user_id, amount, type_id, category, description, transaction_date) VALUES (?, ?, ?, ?, ?, ?)",
-        [userId, amount, typeId, category, description, transactionDate]
+        "INSERT INTO transactions (user_id, amount, type_id, category_id, description, transaction_date) VALUES (?, ?, ?, ?, ?, ?)",
+        [userId, amount, typeId, categoryId, description, transactionDate]
       );
 
-      // 获取创建的交易记录
-      const transaction = await executeQuery(
-        "SELECT t.*, tt.name as type FROM transactions t JOIN transaction_types tt ON t.type_id = tt.id WHERE t.id = ?",
-        [result.insertId]
-      );
+      // // 获取创建的交易记录
+      // const transaction = await executeQuery(
+      //   // "SELECT t.*, tt.name as type FROM transactions t JOIN transaction_types tt ON t.type_id = tt.id WHERE t.id = ?",
+      //   "SELECT t.*, tt.name as type, c.name as category, c.icon as category_icon FROM transactions t JOIN transaction_types tt ON t.type_id = tt.id LEFT JOIN categories c ON t.category_id = c.id WHERE t.id = ?",
+      //   [result.insertId]
+      // );
 
-      return transaction[0];
+      // return transaction[0];
+      return result.insertId;
     } catch (error) {
       throw error;
     }
@@ -53,17 +45,85 @@ class TransactionModel {
   /**
    * 获取用户的所有交易记录
    * @param {number} userId - 用户ID
+   * @param {string} description - 交易描述（可选）
+   * @param {string} typeId - 交易类型ID（可选）
+   * @param {string} categoryId - 交易分类ID（可选）
+   * @param {string} startDate - 起始日期（可选）
+   * @param {string} endDate - 结束日期（可选）
+   * @param {number} limit - 每页记录数（可选）
+   * @param {number} offset - 偏移量（可选）
    * @returns {Promise<Array>} 交易记录数组
    */
-  static async getUserTransactions(userId) {
+  static async getUserTransactions({
+    userId,
+    description,
+    typeId,
+    categoryId,
+    startDate,
+    endDate,
+    limit = 10,
+    offset = 0,
+  }) {
     try {
-      const transactions = await executeQuery(
-        "SELECT t.*, tt.name as type FROM transactions t JOIN transaction_types tt ON t.type_id = tt.id WHERE user_id = ? ORDER BY transaction_date DESC",
-        [userId]
-      );
-      return transactions;
-    } catch (error) {
-      throw error;
+      let sql = `
+      SELECT 
+        t.id,
+        t.user_id,
+        t.amount,
+        tt.name AS type_name,
+        t.type_id,
+        t.category_id,
+        c.name AS category_name,
+        c.icon AS category_icon,
+        t.description,
+        DATE_FORMAT(t.transaction_date, '%Y-%m-%d') AS transaction_date,
+        t.created_at,
+        t.updated_at
+      FROM transactions t
+      JOIN transaction_types tt ON t.type_id = tt.id
+      LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.user_id = ?
+    `;
+
+      const values = [userId];
+
+      if (description) {
+        sql += ` AND t.description LIKE ?`;
+        values.push(`%${description}%`);
+      }
+
+      if (typeId) {
+        sql += ` AND t.type_id = ?`;
+        values.push(typeId);
+      }
+
+      if (categoryId) {
+        sql += ` AND t.category_id = ?`;
+        values.push(categoryId);
+      }
+
+      if (startDate) {
+        sql += ` AND t.transaction_date >= ?`;
+        values.push(startDate);
+      }
+
+      if (endDate) {
+        sql += ` AND t.transaction_date <= ?`;
+        values.push(endDate);
+      }
+
+      sql += ` ORDER BY t.transaction_date DESC, t.id DESC`;
+
+      // ✅ 先解析 limit/offset，保证是整数
+      const safeLimit = parseInt(limit, 10) || 10;
+      const safeOffset = parseInt(offset, 10) || 0;
+
+      // sql += ` ORDER BY t.transaction_date DESC, t.id DESC LIMIT ${safeLimit} OFFSET ${safeOffset}`;
+      sql += ` LIMIT ${safeLimit} OFFSET ${safeOffset}`;
+
+      return await executeQuery(sql, values);
+    } catch (err) {
+      throw err;
     }
   }
 
@@ -74,8 +134,7 @@ class TransactionModel {
    * @returns {Promise<Object|null>} 交易记录对象或null（如果不存在）
    */
   static async getTransactionById(transactionId, userId) {
-    const sql =
-        "SELECT t.*, tt.name as type FROM transactions t JOIN transaction_types tt ON t.type_id = tt.id WHERE t.id = ? AND t.user_id = ?";
+    const sql = "SELECT * FROM transactions WHERE id = ? AND user_id = ?";
     try {
       const transactions = await executeQuery(sql, [transactionId, userId]);
       return transactions[0] || null;
@@ -89,8 +148,8 @@ class TransactionModel {
    * @param {number} transactionId - 交易记录ID
    * @param {number} userId - 用户ID
    * @param {number} amount - 新的交易金额
-   * @param {string} type - 新的交易类型
-   * @param {string} category - 新的交易分类
+   * @param {string} typeId - 新的交易类型ID
+   * @param {string} categoryId - 新的交易分类ID
    * @param {string} description - 新的交易描述
    * @param {string} transactionDate - 新的交易日期
    * @returns {Promise<boolean>} 是否更新成功
@@ -100,29 +159,19 @@ class TransactionModel {
     transactionId,
     userId,
     amount,
-    type,
-    category,
+    typeId,
+    categoryId,
     description,
     transactionDate
   ) {
     try {
-      // 首先获取类型ID
-      const typeResult = await executeQuery(
-        "SELECT id FROM transaction_types WHERE name = ?",
-        [type]
-      );
-      if (typeResult.length === 0) {
-        throw new AppError("无效的交易类型", 400);
-      }
-      const typeId = typeResult[0].id;
-
       // 更新交易记录
       const result = await executeQuery(
-        "UPDATE transactions SET amount = ?, type_id = ?, category = ?, description = ?, transaction_date = ? WHERE id = ? AND user_id = ?",
+        "UPDATE transactions SET amount = ?, type_id = ?, category_id = ?, description = ?, transaction_date = ? WHERE id = ? AND user_id = ?",
         [
           amount,
           typeId,
-          category,
+          categoryId,
           description,
           transactionDate,
           transactionId,
